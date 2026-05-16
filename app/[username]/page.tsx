@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { Suspense }        from "react";
 import { notFound }        from "next/navigation";
 import type { Metadata }   from "next";
@@ -22,14 +24,11 @@ interface CreatorPageData {
 
 async function fetchCreatorPage(username: string): Promise<CreatorPageData | null> {
   try {
-    const result = await serverFetch<CreatorPageData>(`/creators/${username}`, {
+    return await serverFetch<CreatorPageData>(`/creators/${username}`, {
       revalidate: 60,
       tags:       [`creator-${username}`],
     });
-    console.log("[fetchCreatorPage] success:", JSON.stringify(result).slice(0, 200));
-    return result;
-  } catch (err) {
-    console.error("[fetchCreatorPage] error:", err);
+  } catch {
     return null;
   }
 }
