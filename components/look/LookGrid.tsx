@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { LookGridItem }                   from "./LookGridItem";
-import { LookGridSkeleton }               from "@/components/ui/Skeleton";
-import type { LookSummary }               from "@/types/look";
+import { LookGridItem }                  from "./LookGridItem";
+import type { LookSummary }              from "@/types/look";
 
 interface Props {
   looks:           LookSummary[];
@@ -14,11 +13,7 @@ interface Props {
 }
 
 export function LookGrid({
-  looks,
-  onLookClick,
-  onLoadMore,
-  hasNextPage,
-  isFetchingNext,
+  looks, onLookClick, onLoadMore, hasNextPage, isFetchingNext,
 }: Props) {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -33,44 +28,41 @@ export function LookGrid({
   );
 
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
+    const el = sentinelRef.current;
+    if (!el) return;
     const observer = new IntersectionObserver(handleObserver, {
-      rootMargin: "200px",
+      rootMargin: "300px",
       threshold:  0.1,
     });
-
-    observer.observe(sentinel);
+    observer.observe(el);
     return () => observer.disconnect();
   }, [handleObserver]);
-
-  if (looks.length === 0) return null;
 
   return (
     <>
       <div
-        className="grid grid-cols-3 gap-[1px] bg-[#F0F0F0]"
+        className="grid grid-cols-3 gap-px bg-zinc-200"
         role="list"
         aria-label="Looks"
       >
-        {looks.map((look, index) => (
+        {looks.map((look, i) => (
           <div key={look.id} role="listitem">
             <LookGridItem
               look={look}
               onClick={onLookClick}
-              priority={index < 6}
+              priority={i < 9}
             />
           </div>
         ))}
       </div>
 
-      <div ref={sentinelRef} className="h-1" aria-hidden />
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="h-px" aria-hidden />
 
       {isFetchingNext && (
-        <div className="grid grid-cols-3 gap-[1px] bg-[#F0F0F0]">
+        <div className="grid grid-cols-3 gap-px bg-zinc-200">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-[#F0F0F0] animate-pulse" />
+            <div key={i} className="aspect-square bg-zinc-100 animate-pulse" />
           ))}
         </div>
       )}

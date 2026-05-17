@@ -1,10 +1,7 @@
 "use client";
 
 import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
+  useEffect, useRef, useState, useCallback,
   type TouchEvent,
 }                           from "react";
 import Image                from "next/image";
@@ -12,7 +9,6 @@ import { useLook }          from "@/hooks/useLooks";
 import { Avatar }           from "@/components/ui/Avatar";
 import { ProductPin }       from "./ProductPin";
 import { ProductSheet }     from "@/components/product/ProductSheet";
-import { Skeleton }         from "@/components/ui/Skeleton";
 import { formatCount }      from "@/lib/utils";
 import { X, Heart, Share2, ShoppingBag } from "lucide-react";
 
@@ -28,21 +24,42 @@ export function LookViewer({ lookId, onClose }: Props) {
   const [liked,        setLiked]        = useState(false);
   const [showProducts, setShowProducts] = useState(false);
 
-  const touchStartX = useRef<number>(0);
-  const touchStartY = useRef<number>(0);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const isDragging  = useRef(false);
 
   const allImages = look
-    ? [look.coverImage, ...look.images.filter((i) => i !== look.coverImage)]
+    ? [look.coverImage, ...look.images.filter(i => i !== look.coverImage)]
     : [];
 
-  const goNext = useCallback(() => {
-    setActiveIndex((i) => Math.min(i + 1, allImages.length - 1));
-  }, [allImages.length]);
+  const goNext = useCallback(() =>
+    setActiveIndex(i => Math.min(i + 1, allImages.length - 1)),
+    [allImages.length]
+  );
+  const goPrev = useCallback(() =>
+    setActiveIndex(i => Math.max(i - 1, 0)),
+    []
+  );
 
-  const goPrev = useCallback(() => {
-    setActiveIndex((i) => Math.max(i - 1, 0));
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape")     onClose();
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft")  goPrev();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose, goNext, goPrev]);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
   }, []);
+
+  useEffect(() => {
+    if (look) setLiked(look.isLiked);
+  }, [look]);
 
   const handleTouchStart = (e: TouchEvent) => {
     touchStartX.current = e.touches[0]!.clientX;
@@ -59,30 +76,8 @@ export function LookViewer({ lookId, onClose }: Props) {
   const handleTouchEnd = (e: TouchEvent) => {
     if (!isDragging.current) return;
     const dx = e.changedTouches[0]!.clientX - touchStartX.current;
-    if (Math.abs(dx) > 50) {
-      dx < 0 ? goNext() : goPrev();
-    }
+    if (Math.abs(dx) > 50) dx < 0 ? goNext() : goPrev();
   };
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape")     onClose();
-      if (e.key === "ArrowRight") goNext();
-      if (e.key === "ArrowLeft")  goPrev();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose, goNext, goPrev]);
-
-  useEffect(() => {
-    const original = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = original; };
-  }, []);
-
-  useEffect(() => {
-    if (look) setLiked(look.isLiked);
-  }, [look]);
 
   return (
     <div
@@ -92,19 +87,18 @@ export function LookViewer({ lookId, onClose }: Props) {
       className="fixed inset-0 z-50 bg-black flex flex-col max-w-[480px] mx-auto"
     >
       {/* ── Top bar ── */}
-      <div
-        className="absolute top-0 left-0 right-0 z-20
-                   bg-gradient-to-b from-black/70 to-transparent
-                   flex items-center justify-between px-4 py-3"
-      >
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center
+                      justify-between px-3 py-3
+                      bg-gradient-to-b from-black/60 to-transparent">
         <button
           onClick={onClose}
-          aria-label="Close look"
-          className="w-9 h-9 flex items-center justify-center
-                     rounded-full bg-black/20 backdrop-blur-sm cursor-pointer
-                     hover:bg-black/40 transition"
+          aria-label="Close"
+          className="w-9 h-9 rounded-full bg-black/20 backdrop-blur-sm flex
+                     items-center justify-center cursor-pointer
+                     hover:bg-black/40 transition focus-visible:outline-none
+                     focus-visible:ring-2 focus-visible:ring-white"
         >
-          <X size={20} color="white" />
+          <X size={20} className="text-white" />
         </button>
 
         {look && (
@@ -112,9 +106,9 @@ export function LookViewer({ lookId, onClose }: Props) {
             <Avatar
               src={look.creator.profilePhoto}
               alt={look.creator.displayName}
-              size={28}
+              size="xs"
             />
-            <span className="text-white text-[13px] font-medium">
+            <span className="text-white text-[13px] font-semibold">
               @{look.creator.username}
             </span>
           </div>
@@ -122,15 +116,16 @@ export function LookViewer({ lookId, onClose }: Props) {
 
         <button
           aria-label="Share look"
-          className="w-9 h-9 flex items-center justify-center
-                     rounded-full bg-black/20 backdrop-blur-sm cursor-pointer
-                     hover:bg-black/40 transition"
+          className="w-9 h-9 rounded-full bg-black/20 backdrop-blur-sm flex
+                     items-center justify-center cursor-pointer
+                     hover:bg-black/40 transition focus-visible:outline-none
+                     focus-visible:ring-2 focus-visible:ring-white"
         >
-          <Share2 size={18} color="white" />
+          <Share2 size={18} className="text-white" />
         </button>
       </div>
 
-      {/* ── Main image area ── */}
+      {/* ── Image area ── */}
       <div
         className="flex-1 relative overflow-hidden select-none"
         onTouchStart={handleTouchStart}
@@ -138,28 +133,35 @@ export function LookViewer({ lookId, onClose }: Props) {
         onTouchEnd={handleTouchEnd}
       >
         {isLoading || !look ? (
-          <Skeleton className="w-full h-full rounded-none" />
+          <div className="absolute inset-0 bg-zinc-900 animate-pulse" />
         ) : (
           <>
-            <div
-              className="flex h-full transition-transform duration-300 ease-out"
-              style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-            >
-              {allImages.map((src, i) => (
-                <div key={src} className="relative w-full h-full flex-shrink-0">
-                  <Image
-                    src={src}
-                    alt={`Look image ${i + 1}`}
-                    fill
-                    sizes="480px"
-                    className="object-cover"
-                    priority={i === 0}
-                  />
-                </div>
-              ))}
-            </div>
+            {/* Images — slide with pure Tailwind translate */}
+            {allImages.map((src, i) => (
+              <div
+                key={src}
+                aria-hidden={i !== activeIndex}
+                className={`absolute inset-0 transition-all duration-300 ease-out ${
+                  i === activeIndex
+                    ? "opacity-100 translate-x-0 z-10"
+                    : i < activeIndex
+                    ? "opacity-0 -translate-x-full z-0"
+                    : "opacity-0 translate-x-full z-0"
+                }`}
+              >
+                <Image
+                  src={src}
+                  alt={`Look image ${i + 1}`}
+                  fill
+                  sizes="480px"
+                  className="object-cover"
+                  priority={i === 0}
+                />
+              </div>
+            ))}
 
-            {look.products.slice(0, 5).map((product) => (
+            {/* Product pins */}
+            {look.products.map(product => (
               <ProductPin
                 key={product.id}
                 xPosition={product.xPosition}
@@ -169,10 +171,11 @@ export function LookViewer({ lookId, onClose }: Props) {
               />
             ))}
 
+            {/* Image dots */}
             {allImages.length > 1 && (
               <div
-                className="absolute bottom-24 left-0 right-0 flex justify-center
-                           gap-1.5 pointer-events-none"
+                className="absolute bottom-24 left-0 right-0 flex justify-center gap-1.5
+                           pointer-events-none z-20"
                 aria-hidden
               >
                 {allImages.map((_, i) => (
@@ -191,20 +194,19 @@ export function LookViewer({ lookId, onClose }: Props) {
 
       {/* ── Bottom bar ── */}
       {look && (
-        <div
-          className="absolute bottom-0 left-0 right-0
-                     bg-gradient-to-t from-black/80 to-transparent
-                     px-4 pb-8 pt-16"
-        >
+        <div className="absolute bottom-0 left-0 right-0 z-20
+                        bg-gradient-to-t from-black/80 to-transparent
+                        px-4 pb-8 pt-16">
           {look.caption && (
-            <p className="text-white text-[13px] mb-4 leading-relaxed line-clamp-2">
+            <p className="text-white text-[13px] mb-3 leading-relaxed line-clamp-2">
               {look.caption}
             </p>
           )}
 
           <div className="flex items-center justify-between">
+            {/* Like */}
             <button
-              onClick={() => setLiked((l) => !l)}
+              onClick={() => setLiked(l => !l)}
               aria-label={liked ? "Unlike" : "Like"}
               aria-pressed={liked}
               className="flex items-center gap-1.5 cursor-pointer
@@ -212,21 +214,24 @@ export function LookViewer({ lookId, onClose }: Props) {
             >
               <Heart
                 size={26}
-                color="white"
-                fill={liked ? "white" : "none"}
-                strokeWidth={liked ? 0 : 2}
+                className={`transition-all ${
+                  liked
+                    ? "text-red-500 fill-red-500 scale-110"
+                    : "text-white fill-transparent"
+                }`}
               />
               <span className="text-white text-[13px] font-medium">
                 {formatCount(look.likeCount + (liked && !look.isLiked ? 1 : 0))}
               </span>
             </button>
 
+            {/* Shop CTA */}
             {look.products.length > 0 && (
               <button
                 onClick={() => setShowProducts(true)}
                 className="flex items-center gap-2 bg-white text-black
-                           px-5 h-[42px] rounded-full text-[13px] font-bold
-                           cursor-pointer hover:bg-[#F5F5F5] transition-all
+                           px-5 h-10 rounded-full text-[13px] font-bold
+                           cursor-pointer hover:bg-zinc-100 transition-all
                            active:scale-95 shadow-lg"
               >
                 <ShoppingBag size={15} />
@@ -237,9 +242,11 @@ export function LookViewer({ lookId, onClose }: Props) {
         </div>
       )}
 
-      {showProducts && look && (
+      {/* ── Product sheet ── */}
+      {look && (
         <ProductSheet
           products={look.products}
+          isOpen={showProducts}
           onClose={() => setShowProducts(false)}
         />
       )}
