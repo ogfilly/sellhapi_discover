@@ -44,3 +44,19 @@ export function LookGridSkeleton() {
     </div>
   );
 }
+
+export function FeedGridSkeleton() {
+  return (
+    <div className="grid grid-cols-3 gap-px bg-zinc-200 max-w-[480px] mx-auto
+                    auto-rows-[calc(100vw/3)]">
+      {Array.from({ length: 12 }).map((_, i) => (
+        <div
+          key={i}
+          className={`bg-zinc-100 animate-pulse ${
+            i === 3 || i === 9 ? "row-span-2" : "row-span-1"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}

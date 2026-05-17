@@ -16,4 +16,6 @@ export interface Look {
 }
 
 export interface LookSummary
-  extends Pick<Look, "id" | "coverImage" | "likeCount" | "viewCount" | "publishedAt"> {}
+  extends Pick<Look, "id" | "coverImage" | "likeCount" | "viewCount" | "publishedAt"> {
+  productCount: number;
+}

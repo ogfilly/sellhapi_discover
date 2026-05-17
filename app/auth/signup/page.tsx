@@ -144,7 +144,7 @@ export default function SignupPage() {
         data:   { email: form.email.toLowerCase().trim(), otp: otpValue },
       });
       const { token, creator } = res.data;
-      setStoredToken(token);
+      await setStoredToken(token);
       setAuth(token, creator.id, creator.username);
       toast.success("Welcome to SellHapi Discover!");
       router.push(`/${creator.username}`);

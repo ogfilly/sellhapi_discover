@@ -8,7 +8,7 @@ interface AuthState {
   username:        string | null;
   isAuthenticated: boolean;
   setAuth:         (token: string, creatorId: string, username: string) => void;
-  clearAuth:       () => void;
+  clearAuth:       () => Promise<void>;
 }
 
 export const useAuth = create<AuthState>()(
@@ -20,8 +20,8 @@ export const useAuth = create<AuthState>()(
       isAuthenticated: false,
       setAuth: (token, creatorId, username) =>
         set({ token, creatorId, username, isAuthenticated: true }),
-      clearAuth: () => {
-        clearStoredAuth();
+      clearAuth: async () => {
+        await clearStoredAuth();
         set({ token: null, creatorId: null, username: null, isAuthenticated: false });
       },
     }),

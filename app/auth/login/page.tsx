@@ -46,7 +46,7 @@ export default function LoginPage() {
         data:   { email: email.toLowerCase().trim(), password },
       });
       const { token, creator } = res.data;
-      setStoredToken(token);
+      await setStoredToken(token);
       setAuth(token, creator.id, creator.username);
       toast.success(`Welcome back, ${creator.displayName}!`);
 
