@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter }             from "next/navigation";
 import { Grid3X3, Heart }        from "lucide-react";
 import { CreatorHeader }         from "./CreatorHeader";
 import { LookGrid }              from "@/components/look/LookGrid";
@@ -19,6 +20,7 @@ interface Props {
 
 export function CreatorProfile({ creator, initialLooks }: Props) {
   const [activeLookId, setActiveLookId] = useState<string | null>(null);
+  const router                          = useRouter();
   const { username: authUsername }      = useAuth();
   const isOwnProfile                    = authUsername === creator.username;
 
@@ -46,6 +48,7 @@ export function CreatorProfile({ creator, initialLooks }: Props) {
         </h1>
         {isOwnProfile && (
           <button
+            onClick={() => router.push("/new-look")}
             className="flex items-center gap-1.5 h-8 px-4 bg-[#9355A6] text-white
                        rounded-lg text-[13px] font-semibold cursor-pointer
                        hover:bg-[#7d4690] transition active:bg-[#6b3880]"
